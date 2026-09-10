@@ -1,0 +1,12 @@
+[
+  {"id": "english_01", "category": "English", "prompt": "Machine learning is", "expected_terms": ["data", "learn", "model"]},
+  {"id": "hindi_01", "category": "Hindi", "prompt": "भारत एक", "expected_terms": ["देश", "है", "भारत"]},
+  {"id": "math_01", "category": "Math", "prompt": "A triangle has three", "expected_terms": ["sides", "angles", "vertices"]},
+  {"id": "math_02", "category": "Math", "prompt": "2 + 2 =", "expected_terms": ["4", "four"]},
+  {"id": "science_01", "category": "Science", "prompt": "Water boils at", "expected_terms": ["100", "degree", "celsius"]},
+  {"id": "programming_01", "category": "Programming", "prompt": "Python is a programming language that", "expected_terms": ["code", "program", "interpreted"]},
+  {"id": "education_01", "category": "Education", "prompt": "The purpose of education is", "expected_terms": ["learn", "knowledge", "develop"]},
+  {"id": "general_knowledge_01", "category": "General knowledge", "prompt": "The capital of India is", "expected_terms": ["delhi"]},
+  {"id": "instruction_01", "category": "Instruction following", "prompt": "List three colors:", "expected_terms": ["red", "blue", "green"]},
+  {"id": "long_context_01", "category": "Long-context coherence", "prompt": "Once upon a time, a small village", "expected_terms": ["village", "people", "story"]}
+]

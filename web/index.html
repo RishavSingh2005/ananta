@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ananta</title>
+  <style>
+    :root { color-scheme: dark; --ink: #f4efe6; --muted: #a9a094; --panel: #1b1a18; --line: #39352f; --accent: #e5a24b; --accent-2: #7db6a2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: var(--ink); background: radial-gradient(circle at 75% 10%, #30372f 0, #161514 42%, #0e0e0d 100%); font: 16px Georgia, serif; }
+    main { width: min(940px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 72px; }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 44px; }
+    h1 { margin: 0; font-size: clamp(3.2rem, 9vw, 6.8rem); line-height: .85; font-weight: 400; }
+    .tagline { max-width: 280px; color: var(--muted); line-height: 1.5; }
+    .panel { border: 1px solid var(--line); background: rgba(27, 26, 24, .86); padding: 22px; box-shadow: 0 20px 70px rgba(0,0,0,.25); }
+    textarea { width: 100%; min-height: 190px; resize: vertical; border: 0; outline: 0; background: #111110; color: var(--ink); padding: 20px; font: 1.25rem/1.55 Georgia, serif; }
+    textarea:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+    .controls { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-top: 16px; }
+    label { display: grid; gap: 7px; color: var(--muted); font: 11px/1.2 Consolas, monospace; text-transform: uppercase; letter-spacing: .08em; }
+    input { width: 100%; border: 1px solid var(--line); background: #111110; color: var(--ink); padding: 12px; font: 15px Consolas, monospace; }
+    button { border: 0; background: var(--accent); color: #17120b; padding: 13px 22px; cursor: pointer; font: 700 14px Consolas, monospace; }
+    button:hover { background: #f2bd70; } button:disabled { cursor: wait; opacity: .55; }
+    .status { min-height: 22px; margin-top: 15px; color: var(--accent-2); font: 12px Consolas, monospace; }
+    .output { white-space: pre-wrap; margin-top: 24px; min-height: 130px; color: #e9e0d4; font-size: 1.15rem; line-height: 1.65; }
+    footer { margin-top: 22px; color: var(--muted); font: 12px Consolas, monospace; }
+    @media (max-width: 700px) { main { padding-top: 28px; } header { display: block; } .tagline { margin-top: 22px; } .controls { grid-template-columns: 1fr 1fr; } button { width: 100%; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>Ananta</h1><div class="tagline">A small language model, trained from scratch. Ask it to continue a thought.</div></header>
+    <section class="panel">
+      <textarea id="prompt" maxlength="4096" placeholder="Machine learning is..." autofocus></textarea>
+      <div class="controls">
+        <label>Temperature<input id="temperature" type="number" min="0.05" max="2" step="0.05" value="0.8"></label>
+        <label>Max tokens<input id="maxTokens" type="number" min="1" max="512" value="100"></label>
+        <label>API key<input id="apiKey" type="password" placeholder="optional"></label>
+        <label class="web-toggle"><input id="useWeb" type="checkbox"> Web context</label>
+        <label class="web-toggle"><input id="useRag" type="checkbox"> Local documents</label>
+        <button id="generate">Generate</button>
+      </div>
+      <div class="status" id="status">checking model...</div>
+      <div class="output" id="output"></div>
+    </section>
+    <footer>ANANTA / LOCAL INFERENCE</footer>
+  </main>
+  <script>
+    const prompt = document.querySelector('#prompt');
+    const output = document.querySelector('#output');
+    const status = document.querySelector('#status');
+    const button = document.querySelector('#generate');
+    fetch('/health').then(r => r.json()).then(data => { status.textContent = data.model_loaded ? 'model ready' : 'model will load on first generation'; }).catch(() => { status.textContent = 'API unavailable'; });
+    button.addEventListener('click', async () => {
+      if (!prompt.value.trim()) { status.textContent = 'enter a prompt first'; return; }
+      button.disabled = true; status.textContent = 'generating...'; output.textContent = '';
+      const headers = { 'Content-Type': 'application/json' };
+      const key = document.querySelector('#apiKey').value; if (key) headers['X-API-Key'] = key;
+      try {
+        const response = await fetch('/assist', { method: 'POST', headers, body: JSON.stringify({ prompt: prompt.value, max_tokens: Number(document.querySelector('#maxTokens').value), temperature: Number(document.querySelector('#temperature').value), use_web: document.querySelector('#useWeb').checked, use_rag: document.querySelector('#useRag').checked }) });
+        const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'request failed');
+        output.textContent = data.text; status.textContent = data.tool_used ? `calculated by ${data.tool_used}` : `${data.tokens_generated ?? 0} tokens generated`;
+      } catch (error) { status.textContent = error.message; } finally { button.disabled = false; }
+    });
+  </script>
+</body>
+</html>
